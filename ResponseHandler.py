@@ -1,0 +1,98 @@
+from struct import *
+import io
+from PackageTypeEnums import package_type
+
+
+class ResponseHandler:
+    transaction_id = b''
+    questions_count = 0
+    answer_count = 0
+    authority_count = 0
+    additional_count = 0
+    questions = []
+    answer_common_part = None
+    
+    def decode_canonical_name(self, byte_stream):
+        address = self.decode_first_chunk_of_canonical_name(byte_stream)
+        print('first chunck, adress')
+        if self.answer_common_part is not None:
+            byte_stream.read(2)
+            return address + self.answer_common_part
+        
+        self.answer_common_part = ""
+        chunk_size = ord(byte_stream.read(1))
+        while chunk_size > 0:
+            print('adress', address)
+            print('common addres',self.answer_common_part)
+            chunk = byte_stream.read(chunk_size).decode() + '.'
+            address += chunk
+            self.answer_common_part += chunk
+            chunk_size = ord(byte_stream.read(1))
+        
+        return address
+    
+    def decode_first_chunk_of_canonical_name(self,byte_stream):
+        chunk_size = ord(byte_stream.read(1))
+        return byte_stream.read(chunk_size).decode() + '.'
+        
+    def decode_AAAA_address(self, byte_stream):
+        adr = ""
+        for i in range(8):
+            adr += '{:02x}'.format(ord(byte_stream.read(1))) + '{:02x}'.format(ord(byte_stream.read(1))) + ':'
+        return adr
+    
+    def decode_id(self, byte_stream):
+        return '.'.join(str(quartet) for quartet in byte_stream.read(4))
+    
+    def parse_answer(self, byte_stream):
+        byte_stream.read(2)
+        ans_type = byte_stream.read(2)
+        # print('type', ans_type)
+        clas = byte_stream.read(2)
+        # print('class', clas)
+        ttl = unpack('>I', byte_stream.read(4))[0]
+        # print(ttl)
+        data_length = unpack('>h', byte_stream.read(2))[0]
+        if ans_type == package_type.AAAA.value:
+            address = self.decode_AAAA_address(byte_stream)
+        elif ans_type == package_type.A.value or ans_type == package_type.NS.value:
+            address = self.decode_canonical_name(byte_stream)
+        elif data_length == 4:
+            address = self.decode_id(byte_stream)
+        elif data_length == 16:
+            address = self.decode_canonical_name(byte_stream)
+        
+        print(address)
+    
+    def parse_response(self, resp):
+        resp = io.BytesIO(resp)
+        self.transaction_id = resp.read(2)
+        resp.read(2)  # flags
+        self.questions_count = unpack('>h', resp.read(2))[0]
+        self.answer_count = unpack('>h', resp.read(2))[0]
+        self.authority_count = unpack('>h', resp.read(2))[0]
+        self.additional_count = unpack('>h', resp.read(2))[0]
+        
+        print(self.transaction_id)
+        print(self.questions_count)
+        print(self.answer_count)
+        print(self.authority_count)
+        print(self.additional_count)
+        
+        for i in range(self.questions_count):
+            address = self.decode_canonical_name(resp)
+            self.answer_common_part = None
+            type = resp.read(2)
+            clas = resp.read(2)
+            print(address)
+            # print(type)
+            # print(clas)
+            #
+        for i in range(self.answer_count):
+            self.parse_answer(resp)
+        
+        for i in range(self.authority_count):
+            self.parse_answer(resp)
+        
+        for i in range(self.additional_count):
+            self.parse_answer(resp)
