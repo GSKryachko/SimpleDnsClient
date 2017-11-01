@@ -12,3 +12,5 @@ hex_string = '7a65010000010000000000000377777706676f6f676c6503636f6d0000010001'.
 resp = send_request('google.ru', next_sever_ip, 53, False)
 response_handler = ResponseHandler()
 response_handler.parse_response(resp)
+for i in response_handler.authority:
+    print(i.address)
