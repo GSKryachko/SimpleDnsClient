@@ -10,31 +10,55 @@ class ResponseHandler:
     authority_count = 0
     additional_count = 0
     questions = []
-    answer_common_part = None
+    answer_common_part = ""
+    last_answer = ""
     
     def decode_canonical_name(self, byte_stream):
-        address = self.decode_first_chunk_of_canonical_name(byte_stream)
-        print('first chunck, adress')
-        if self.answer_common_part is not None:
-            byte_stream.read(2)
-            return address + self.answer_common_part
+        address = ""
+        chunk_size = ord(byte_stream.read(1))
+        address += byte_stream.read(chunk_size).decode() + '.'
         
-        self.answer_common_part = ""
+        chunk_size = ord(byte_stream.read(1))
+        chunk = byte_stream.read(chunk_size).decode() + '.'
+        if chunk == "+.":
+            return address + self.answer_common_part
+        address += chunk
+        self.answer_common_part = chunk
         chunk_size = ord(byte_stream.read(1))
         while chunk_size > 0:
-            print('adress', address)
-            print('common addres',self.answer_common_part)
+            
             chunk = byte_stream.read(chunk_size).decode() + '.'
-            address += chunk
             self.answer_common_part += chunk
+
+            address += chunk
             chunk_size = ord(byte_stream.read(1))
         
+        self.last_answer = address
         return address
     
-    def decode_first_chunk_of_canonical_name(self,byte_stream):
+    # def decode_canonical_name(self, byte_stream):
+    #     address = self.decode_first_chunk_of_canonical_name(byte_stream)
+    #     print('first chunck, adress')
+    #     if self.answer_common_part is not None:
+    #         byte_stream.read(2)
+    #         return address + self.answer_common_part
+    #
+    #     self.answer_common_part = ""
+    #     chunk_size = ord(byte_stream.read(1))
+    #     while chunk_size > 0:
+    #         print('adress', address)
+    #         print('common addres', self.answer_common_part)
+    #         chunk = byte_stream.read(chunk_size).decode() + '.'
+    #         address += chunk
+    #         self.answer_common_part += chunk
+    #         chunk_size = ord(byte_stream.read(1))
+    #
+    #     return address
+    
+    def decode_first_chunk_of_canonical_name(self, byte_stream):
         chunk_size = ord(byte_stream.read(1))
         return byte_stream.read(chunk_size).decode() + '.'
-        
+    
     def decode_AAAA_address(self, byte_stream):
         adr = ""
         for i in range(8):
