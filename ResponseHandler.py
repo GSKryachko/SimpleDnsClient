@@ -28,10 +28,10 @@ class ResponseHandler:
         while chunk_size > 0:
             if chunk_size == 192:
                 chunk = byte_stream.read(1).decode()
-                if chunk == '+':
-                    address += self.last_answer[chunk_number:]
-                    break
-                byte_stream.seek(-1, os.SEEK_CUR)
+                #if chunk in ['+',')','$','/']:
+                address += self.last_answer[chunk_number:]
+                break
+                #byte_stream.seek(-1, os.SEEK_CUR)
             chunk = byte_stream.read(chunk_size).decode()
             
             chunk_number += 1
@@ -54,7 +54,7 @@ class ResponseHandler:
     def decode_id(self, byte_stream):
         return '.'.join(str(quartet) for quartet in byte_stream.read(4))
     
-    def parse_answer(self, byte_stream, records_list):
+    def parse_answer(self, byte_stream, records_list,internal_type):
         byte_stream.read(2)  # Skip some not important data. It's strangely encoded name
         ans_type = byte_stream.read(2)
         clas = byte_stream.read(2)
@@ -63,13 +63,15 @@ class ResponseHandler:
         data_length = unpack('>h', byte_stream.read(2))[0]
         if ans_type == package_type.AAAA.value:
             address = self.decode_AAAA_address(byte_stream)
-        elif ans_type == package_type.A.value or ans_type == package_type.NS.value:
+        elif ans_type == package_type.NS.value or  ans_type == package_type.CNAME.value:
             address = self.decode_canonical_name(byte_stream)
+        elif ans_type == package_type.A.value:
+            address = self.decode_id(byte_stream)
         elif data_length == 4:
             address = self.decode_id(byte_stream)
         elif data_length == 16:
             address = self.decode_canonical_name(byte_stream)
-        records_list.append(DnsResourceRecord(ans_type, clas, ttl, address))
+        records_list.append(DnsResourceRecord(ans_type, clas, ttl, address,internal_type))
     
     def parse_response(self, resp):
         resp = io.BytesIO(resp)
@@ -79,6 +81,11 @@ class ResponseHandler:
         self.answer_count = unpack('>h', resp.read(2))[0]
         self.authority_count = unpack('>h', resp.read(2))[0]
         self.additional_count = unpack('>h', resp.read(2))[0]
+        
+        self.answers.clear()
+        self.questions.clear()
+        self.authority.clear()
+        self.additional.clear()
         
         print(self.transaction_id)
         print(self.questions_count)
@@ -96,10 +103,10 @@ class ResponseHandler:
             # print(clas)
             #
         for i in range(self.answer_count):
-            self.parse_answer(resp, self.answers)
+            self.parse_answer(resp, self.answers,'answer')
         
         for i in range(self.authority_count):
-            self.parse_answer(resp, self.authority)
+            self.parse_answer(resp, self.authority,'authority')
         
         for i in range(self.additional_count):
-            self.parse_answer(resp, self.additional)
+            self.parse_answer(resp, self.additional,'additional')

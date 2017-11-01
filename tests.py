@@ -34,3 +34,6 @@ class TestRequestHandler(unittest.TestCase):
         self.assertEqual(response_handler.last_answer, ['ns1', 'google', 'com'])
         second_address_decoded = response_handler.decode_canonical_name(second_address)
         self.assertEqual(second_address_decoded, 'ns2.google.com')
+
+    def test_decode_id(self):
+        pass
