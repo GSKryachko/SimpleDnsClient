@@ -6,12 +6,10 @@ import struct
 class RequestHandler:
     def send_request(self, address, dns_sever_ip, dns_server_port, recursive=False):
         request = self.create_request(address, recursive=recursive)
-        print(request)
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         socket.setdefaulttimeout(10)
         s.sendto(request, (dns_sever_ip, dns_server_port))
         res = s.recv(1024)
-        print(res)
         return res
     
     def create_request(self, address, req_type=package_type.A, req_class='IN', recursive=True):

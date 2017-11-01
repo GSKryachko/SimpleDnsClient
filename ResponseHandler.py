@@ -27,7 +27,7 @@ class ResponseHandler:
         address = []
         while chunk_size > 0:
             if chunk_size == 192:
-                chunk = byte_stream.read(1).decode()
+                chunk = byte_stream.read(1)
                 #if chunk in ['+',')','$','/']:
                 address += self.last_answer[chunk_number:]
                 break
@@ -55,7 +55,8 @@ class ResponseHandler:
         return '.'.join(str(quartet) for quartet in byte_stream.read(4))
     
     def parse_answer(self, byte_stream, records_list,internal_type):
-        byte_stream.read(2)  # Skip some not important data. It's strangely encoded name
+        #name = self.decode_canonical_name(byte_stream)  # Skip some not important data. It's strangely encoded name
+        byte_stream.read(2)
         ans_type = byte_stream.read(2)
         clas = byte_stream.read(2)
         ttl = unpack('>I', byte_stream.read(4))[0]

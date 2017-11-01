@@ -29,5 +29,4 @@ class DnsClient():
                     return self.get_ip(address, answer.address)
                 return self.get_ip(address, self.get_ip(answer.address, root_ip))
             if answer.internal_type == 'authority':
-                print(answer)
                 return self.get_ip(address, self.get_ip(answer.address, root_ip))

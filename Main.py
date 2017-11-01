@@ -11,4 +11,4 @@ hex_string = '7a65010000010000000000000377777706676f6f676c6503636f6d0000010001'.
 
 dns_client = DnsClient()
 next_address = root_server_ip
-print(dns_client.get_ip('ASOZYKIN.RU',root_server_ip))
+print(dns_client.get_ip('forbes.com',root_server_ip))
