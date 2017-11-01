@@ -18,10 +18,10 @@ class TestRequestHandler(unittest.TestCase):
         response_handler = ResponseHandler()
         actual_decoded_address = response_handler.decode_first_chunk_of_canonical_name(address_in_bytes)
         self.assertEqual(expected_decoded_address, actual_decoded_address)
-
+    
     def test_canonical_name_decoder(self):
         address_in_bytes = io.BytesIO(b'\x03www\x09microsoft\x03com\x00')
-        expected_decoded_address = 'www.microsoft.com.'
+        expected_decoded_address = 'www.microsoft.com'
         response_handler = ResponseHandler()
         actual_decoded_address = response_handler.decode_canonical_name(address_in_bytes)
         self.assertEqual(expected_decoded_address, actual_decoded_address)
@@ -31,7 +31,6 @@ class TestRequestHandler(unittest.TestCase):
         second_address = io.BytesIO(b'\x03ns2\x06google\x03com\x00')
         response_handler = ResponseHandler()
         response_handler.decode_canonical_name(first_address)
-        self.assertEqual(response_handler.answer_common_part, 'google.com.')
+        self.assertEqual(response_handler.last_answer, ['ns1', 'google', 'com'])
         second_address_decoded = response_handler.decode_canonical_name(second_address)
-        self.assertEqual(second_address_decoded,'ns2.google.com.')
-        
+        self.assertEqual(second_address_decoded, 'ns2.google.com')
