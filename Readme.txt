@@ -1,0 +1,1 @@
+DNS server. Returns ip address by canonical site name (should be first argument).

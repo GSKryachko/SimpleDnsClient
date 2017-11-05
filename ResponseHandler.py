@@ -18,28 +18,38 @@ class ResponseHandler:
     authority = []
     additional = []
     
-    answer_common_part = ""
-    last_answer = ""
-    
     def decode_canonical_name(self, byte_stream):
-        chunk_size = ord(byte_stream.read(1))
-        chunk_number = 0
+        chunk_size_byte = byte_stream.read(1)
+        chunk_size = ord(chunk_size_byte)
         address = []
         while chunk_size > 0:
-            if chunk_size == 192:
+            if chunk_size >= 192:
                 chunk = byte_stream.read(1)
-                #if chunk in ['+',')','$','/']:
-                address += self.last_answer[chunk_number:]
+                print(chunk_size_byte + chunk)
+                byte_stream.seek(-2, os.SEEK_CUR)
+                offset = self.decode_offset(byte_stream.read(2))
+                pos = byte_stream.tell()
+                byte_stream.seek(offset, os.SEEK_SET)
+                address.append(self.decode_canonical_name(byte_stream))
+                byte_stream.seek(pos, os.SEEK_SET)
                 break
-                #byte_stream.seek(-1, os.SEEK_CUR)
+            cur_pos = byte_stream.tell()
+            print(cur_pos)
             chunk = byte_stream.read(chunk_size).decode()
-            
-            chunk_number += 1
             address.append(chunk)
             chunk_size = ord(byte_stream.read(1))
         
-        self.last_answer = address
         return '.'.join(address)
+    
+    def decode_canonical_name_by_offset(self, byte_stream, offset):
+        byte_stream.seek()
+    
+    def decode_offset(self, offset):
+        offset = bytearray(offset)
+        for i in range(len(offset)):
+            offset[i] &= b'\x3f\xff'[i]
+        offset = unpack('>h', offset)[0]
+        return offset
     
     def decode_first_chunk_of_canonical_name(self, byte_stream):
         chunk_size = ord(byte_stream.read(1))
@@ -54,8 +64,9 @@ class ResponseHandler:
     def decode_id(self, byte_stream):
         return '.'.join(str(quartet) for quartet in byte_stream.read(4))
     
-    def parse_answer(self, byte_stream, records_list,internal_type):
-        #name = self.decode_canonical_name(byte_stream)  # Skip some not important data. It's strangely encoded name
+    def parse_answer(self, byte_stream, records_list, internal_type):
+        # name = self.decode_canonical_name(byte_stream)  # Skip some not important data. It's strangely encoded name
+        name = self.decode_canonical_name(byte_stream)
         byte_stream.read(2)
         ans_type = byte_stream.read(2)
         clas = byte_stream.read(2)
@@ -64,7 +75,7 @@ class ResponseHandler:
         data_length = unpack('>h', byte_stream.read(2))[0]
         if ans_type == package_type.AAAA.value:
             address = self.decode_AAAA_address(byte_stream)
-        elif ans_type == package_type.NS.value or  ans_type == package_type.CNAME.value:
+        elif ans_type == package_type.NS.value or ans_type == package_type.CNAME.value:
             address = self.decode_canonical_name(byte_stream)
         elif ans_type == package_type.A.value:
             address = self.decode_id(byte_stream)
@@ -72,7 +83,7 @@ class ResponseHandler:
             address = self.decode_id(byte_stream)
         elif data_length == 16:
             address = self.decode_canonical_name(byte_stream)
-        records_list.append(DnsResourceRecord(ans_type, clas, ttl, address,internal_type))
+        records_list.append(DnsResourceRecord(ans_type, clas, ttl, address, internal_type))
     
     def parse_response(self, resp):
         resp = io.BytesIO(resp)
@@ -96,7 +107,6 @@ class ResponseHandler:
         
         for i in range(self.questions_count):
             address = self.decode_canonical_name(resp)
-            self.answer_common_part = None
             type = resp.read(2)
             clas = resp.read(2)
             print(address)
@@ -104,10 +114,10 @@ class ResponseHandler:
             # print(clas)
             #
         for i in range(self.answer_count):
-            self.parse_answer(resp, self.answers,'answer')
+            self.parse_answer(resp, self.answers, 'answer')
         
         for i in range(self.authority_count):
-            self.parse_answer(resp, self.authority,'authority')
+            self.parse_answer(resp, self.authority, 'authority')
         
         for i in range(self.additional_count):
-            self.parse_answer(resp, self.additional,'additional')
+            self.parse_answer(resp, self.additional, 'additional')

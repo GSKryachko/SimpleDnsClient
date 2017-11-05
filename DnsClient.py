@@ -4,9 +4,9 @@ from PackageTypeEnums import package_type
 
 
 class DnsClient():
-    def __init__(self):
+    def __init__(self,protocol):
         self.response_handler = ResponseHandler()
-        self.request_handler = RequestHandler()
+        self.request_handler = RequestHandler(protocol)
     
     def get_next_resource_record(self, address, dns_server_ip):
         resp = self.request_handler.send_request(address, dns_server_ip, 53, False)
