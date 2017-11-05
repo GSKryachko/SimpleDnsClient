@@ -24,9 +24,7 @@ class ResponseHandler:
         address = []
         while chunk_size > 0:
             if chunk_size >= 192:
-                chunk = byte_stream.read(1)
-                print(chunk_size_byte + chunk)
-                byte_stream.seek(-2, os.SEEK_CUR)
+                byte_stream.seek(-1, os.SEEK_CUR)
                 offset = self.decode_offset(byte_stream.read(2))
                 pos = byte_stream.tell()
                 byte_stream.seek(offset, os.SEEK_SET)
@@ -34,15 +32,12 @@ class ResponseHandler:
                 byte_stream.seek(pos, os.SEEK_SET)
                 break
             cur_pos = byte_stream.tell()
-            print(cur_pos)
             chunk = byte_stream.read(chunk_size).decode()
             address.append(chunk)
             chunk_size = ord(byte_stream.read(1))
         
         return '.'.join(address)
     
-    def decode_canonical_name_by_offset(self, byte_stream, offset):
-        byte_stream.seek()
     
     def decode_offset(self, offset):
         offset = bytearray(offset)
@@ -50,10 +45,6 @@ class ResponseHandler:
             offset[i] &= b'\x3f\xff'[i]
         offset = unpack('>h', offset)[0]
         return offset
-    
-    def decode_first_chunk_of_canonical_name(self, byte_stream):
-        chunk_size = ord(byte_stream.read(1))
-        return byte_stream.read(chunk_size).decode() + '.'
     
     def decode_AAAA_address(self, byte_stream):
         adr = ""
@@ -65,9 +56,7 @@ class ResponseHandler:
         return '.'.join(str(quartet) for quartet in byte_stream.read(4))
     
     def parse_answer(self, byte_stream, records_list, internal_type):
-        # name = self.decode_canonical_name(byte_stream)  # Skip some not important data. It's strangely encoded name
         name = self.decode_canonical_name(byte_stream)
-        byte_stream.read(2)
         ans_type = byte_stream.read(2)
         clas = byte_stream.read(2)
         ttl = unpack('>I', byte_stream.read(4))[0]
@@ -79,10 +68,6 @@ class ResponseHandler:
             address = self.decode_canonical_name(byte_stream)
         elif ans_type == package_type.A.value:
             address = self.decode_id(byte_stream)
-        elif data_length == 4:
-            address = self.decode_id(byte_stream)
-        elif data_length == 16:
-            address = self.decode_canonical_name(byte_stream)
         records_list.append(DnsResourceRecord(ans_type, clas, ttl, address, internal_type))
     
     def parse_response(self, resp):
@@ -99,7 +84,6 @@ class ResponseHandler:
         self.authority.clear()
         self.additional.clear()
         
-        print(self.transaction_id)
         print(self.questions_count)
         print(self.answer_count)
         print(self.authority_count)
