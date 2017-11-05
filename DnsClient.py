@@ -1,3 +1,4 @@
+from NetworkHandler import NetworkHandler
 from ResponseHandler import ResponseHandler
 from RequestHandler import RequestHandler
 from PackageTypeEnums import package_type
@@ -7,9 +8,11 @@ class DnsClient():
     def __init__(self,protocol):
         self.response_handler = ResponseHandler()
         self.request_handler = RequestHandler(protocol)
-    
+        self.network_handler = NetworkHandler(protocol)
+        
     def get_next_resource_record(self, address, dns_server_ip):
-        resp = self.request_handler.send_request(address, dns_server_ip, 53, False)
+        request = self.request_handler.create_request(address)
+        resp = self.network_handler.send_via_udp(request,dns_server_ip,53)
         self.response_handler.parse_response(resp)
         for answer in self.response_handler.answers:
             yield answer

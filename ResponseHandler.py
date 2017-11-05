@@ -31,7 +31,6 @@ class ResponseHandler:
                 address.append(self.decode_canonical_name(byte_stream))
                 byte_stream.seek(pos, os.SEEK_SET)
                 break
-            cur_pos = byte_stream.tell()
             chunk = byte_stream.read(chunk_size).decode()
             address.append(chunk)
             chunk_size = ord(byte_stream.read(1))
@@ -93,10 +92,6 @@ class ResponseHandler:
             address = self.decode_canonical_name(resp)
             type = resp.read(2)
             clas = resp.read(2)
-            print(address)
-            # print(type)
-            # print(clas)
-            #
         for i in range(self.answer_count):
             self.parse_answer(resp, self.answers, 'answer')
         
