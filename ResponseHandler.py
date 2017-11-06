@@ -87,12 +87,7 @@ class ResponseHandler:
         self.questions.clear()
         self.authority.clear()
         self.additional.clear()
-        
-        print(self.questions_count)
-        print(self.answer_count)
-        print(self.authority_count)
-        print(self.additional_count)
-        
+       
         for i in range(self.questions_count):
             self.parse_question(resp)
         

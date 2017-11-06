@@ -15,32 +15,17 @@ class NetworkHandler:
     
     def send(self, request, dns_server_ip, dns_server_port):
         if self.protocol == 'UDP':
-            self.sock.sendto(request, (dns_server_ip, dns_server_port))
+            return self.send_via_udp(request, dns_server_ip, dns_server_port)
         else:
-            self.sock.connect((dns_server_ip, dns_server_port))
-            self.sock.sendall(request)
+            return self.send_via_tcp(request, dns_server_ip, dns_server_port)
     
-    def receive(self):
-        data = b''
-        while True:
-            chunk = self.sock.recv(2 ** 16)
-            print(chunk )
-            print('\n')
-            if len(chunk) == 0:
-                break
-            data += chunk
-            break
-        self.sock.close()
-        return data
-
     def send_via_udp(self, request, dns_server_ip, dns_server_port):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         socket.setdefaulttimeout(100)
         s.sendto(request, (dns_server_ip, dns_server_port))
         res = s.recv(1024)
-        print(len(res))
         return res
-
+    
     def send_via_tcp(self, request, dns_server_ip, dns_server_port):
         request = struct.pack("!H", len(request)) + request
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

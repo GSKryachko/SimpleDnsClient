@@ -13,7 +13,7 @@ class DnsClient:
     
     def get_next_address(self, address, dns_server_ip, req_type=package_type.A, port=53):
         request = self.request_handler.create_request(address, self.support_resolving, req_type=req_type)
-        resp = self.network_handler.send_via_tcp(request, dns_server_ip, port)
+        resp = self.network_handler.send(request, dns_server_ip, port)
         self.response_handler.parse_response(resp)
         if self.response_handler.answers:
             yield self.response_handler.answers[0]
