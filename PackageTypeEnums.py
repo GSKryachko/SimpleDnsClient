@@ -1,4 +1,6 @@
 from enum import Enum
+
+
 class package_type(Enum):
     AAAA = b'\x00\x1c'
     CNAME = b'\x00\x05'

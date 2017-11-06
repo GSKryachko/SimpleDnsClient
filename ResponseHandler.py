@@ -37,7 +37,6 @@ class ResponseHandler:
         
         return '.'.join(address)
     
-    
     def decode_offset(self, offset):
         offset = bytearray(offset)
         for i in range(len(offset)):
@@ -53,6 +52,12 @@ class ResponseHandler:
     
     def decode_id(self, byte_stream):
         return '.'.join(str(quartet) for quartet in byte_stream.read(4))
+    
+    def parse_question(self, byte_stream):
+        address = self.decode_canonical_name(byte_stream)
+        type = byte_stream.read(2)
+        clas = byte_stream.read(2)
+        self.questions.append(DnsResourceRecord(type, clas, internal_type='question', address=address))
     
     def parse_answer(self, byte_stream, records_list, internal_type):
         name = self.decode_canonical_name(byte_stream)
@@ -89,9 +94,8 @@ class ResponseHandler:
         print(self.additional_count)
         
         for i in range(self.questions_count):
-            address = self.decode_canonical_name(resp)
-            type = resp.read(2)
-            clas = resp.read(2)
+            self.parse_question(resp)
+        
         for i in range(self.answer_count):
             self.parse_answer(resp, self.answers, 'answer')
         

@@ -2,8 +2,8 @@ from PackageTypeEnums import package_type
 
 
 class DnsResourceRecord:
-    def __init__(self, type, clas, ttl, address, internal_type):
-        self.type = type
+    def __init__(self, query_type, clas, ttl=None, address=None, internal_type=None):
+        self.type = query_type
         self.clas = clas
         self.ttl = ttl
         self.address = address
