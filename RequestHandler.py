@@ -10,11 +10,11 @@ class RequestHandler:
             raise ValueError('Protocol should be either TCP or UDP')
         self.protocol = protocol
     
-    def create_request(self, address, req_type=package_type.A, req_class='IN', recursive=True):
+    def create_request(self, address, recursive=True, req_type=package_type.A, req_class='IN'):
         dns = b''
         dns += b'\xAB\xCD'  # transaction id
         flag = 0
-        flag += int(recursive)
+        flag |= int(recursive)
         flag *= 2 ** 8
         dns += flag.to_bytes(2, 'big')
         dns += (1).to_bytes(2, 'big')  # questions
@@ -26,6 +26,8 @@ class RequestHandler:
         dns += req_type.value
         if req_class == 'IN':
             dns += ((1).to_bytes(2, 'big'))
+        else:
+            raise ValueError("Only IN class request are supported")
         return dns
     
     def encode_address_with_hex_prefixes(self, address):
