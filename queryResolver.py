@@ -7,7 +7,7 @@ from packageTypeEnums import PackageType
 class QueryResolver:
     def __init__(self, protocol, support_resolving=True):
         self.response_handler = ResponseHandler()
-        self.request_handler = RequestHandler(protocol)
+        self.request_handler = RequestHandler()
         self.network_handler = NetworkManager(protocol)
         self.support_resolving = support_resolving
     

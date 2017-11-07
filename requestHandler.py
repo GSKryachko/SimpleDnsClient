@@ -5,11 +5,6 @@ import struct
 
 
 class RequestHandler:
-    def __init__(self, protocol):
-        if protocol not in ['TCP', 'UDP']:
-            raise ValueError('Protocol should be either TCP or UDP, not ' + protocol)
-        self.protocol = protocol
-    
     def create_request(self, address, recursive=True, req_type=PackageType.A, req_class='IN'):
         dns = b''
         dns += b'\xAB\xCD'  # transaction id
