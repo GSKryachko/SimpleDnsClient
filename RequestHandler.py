@@ -7,7 +7,7 @@ import struct
 class RequestHandler:
     def __init__(self, protocol):
         if protocol not in ['TCP', 'UDP']:
-            raise ValueError('Protocol should be either TCP or UDP')
+            raise ValueError('Protocol should be either TCP or UDP, not ' + protocol)
         self.protocol = protocol
     
     def create_request(self, address, recursive=True, req_type=package_type.A, req_class='IN'):
