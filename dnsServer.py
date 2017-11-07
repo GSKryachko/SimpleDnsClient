@@ -1,15 +1,15 @@
-from DnsClient import DnsClient
-from PackageTypeEnums import package_type
+from queryResolver import QueryResolver
+from packageTypeEnums import PackageType
 import re
 
 
-class DnsServerConsole:
+class DnsServer:
     def __init__(self):
         self.main_root_server = '192.33.4.12'
         self.reserved_root_server = '8.8.8.8'
         self.port = 53
         self.address = None
-        self.req_type = package_type.A
+        self.req_type = PackageType.A
         self.protocol = 'UDP'
         self.extractor = re.compile(r'.*=\s*(.*)\s*')
         self.recursion = True
@@ -23,7 +23,7 @@ class DnsServerConsole:
         return re.search(self.extractor, command).group(1)
     
     def get_address(self):
-        dns_client = DnsClient(self.protocol, self.recursion)
+        dns_client = QueryResolver(self.protocol, self.recursion)
         try:
             print(dns_client.get_ip(self.address, self.main_root_server,
                                     req_type=self.req_type, port=self.port))
@@ -45,7 +45,7 @@ class DnsServerConsole:
         elif command in ['-h', '--help']:
             self.print_help()
         elif 'type' in command:
-            self.req_type = package_type.parse(self.extract_value(command))
+            self.req_type = PackageType.parse(self.extract_value(command))
         elif 'protocol' in command:
             self.protocol = self.extract_value(command)
         elif 'main_server' in command:
@@ -80,5 +80,5 @@ class DnsServerConsole:
 
 
 if __name__ == '__main__':
-    console = DnsServerConsole()
+    console = DnsServer()
     console.run()

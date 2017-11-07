@@ -3,7 +3,7 @@ import socket
 import struct
 
 
-class NetworkHandler:
+class NetworkManager:
     def __init__(self, protocol):
         if protocol not in ['TCP', 'UDP']:
             raise ValueError('Protocol should be either TCP or UDP')
