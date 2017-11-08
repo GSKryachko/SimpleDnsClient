@@ -34,3 +34,16 @@ class QueryResolver:
                 return self.get_ip(address, self.get_ip(answer.address, root_ip, port=port), req_type=req_type)
             if answer.internal_type == 'authority':
                 return self.get_ip(address, self.get_ip(answer.address, root_ip, port=port), req_type=req_type)
+
+    # def get_ip(self, address, root_ip, req_type=PackageType.A, port=53):
+    #     if address is None:
+    #         raise ValueError
+    #     for answer in self.get_next_address(address, root_ip, req_type, port):
+    #         if answer.internal_type == 'answer':
+    #             return answer.address
+    #         if answer.internal_type == 'additional':
+    #             if answer.type == PackageType.A.value or answer.type == PackageType.AAAA.value:
+    #                 return self.get_ip(address, answer.address, req_type=req_type)
+    #             return self.get_ip(address, self.get_ip(answer.address, root_ip, port=port), req_type=req_type)
+    #         if answer.internal_type == 'authority':
+    #             return self.get_ip(address, self.get_ip(answer.address, root_ip, port=port), req_type=req_type)

@@ -53,20 +53,20 @@ class ResponseHandler:
     def decode_id(self, byte_stream):
         return '.'.join(str(quartet) for quartet in byte_stream.read(4))
     
-    def parse_question(self, byte_stream):
+    def parse_question(self, byte_stream,internal_type = 'question'):
         address = self.decode_canonical_name(byte_stream)
         type = byte_stream.read(2)
         clas = byte_stream.read(2)
-        self.questions.append(DnsResourceRecord(type, clas, address=address))
+        self.questions.append(DnsResourceRecord(type, clas, address=address,internal_type=internal_type))
     
-    def parse_answer(self, byte_stream, records_list):
+    def parse_answer(self, byte_stream, records_list, internal_type):
         name = self.decode_canonical_name(byte_stream)
         ans_type = byte_stream.read(2)
         clas = byte_stream.read(2)
         ttl = unpack('>I', byte_stream.read(4))[0]
         data_length = unpack('>h', byte_stream.read(2))[0]
         address = self.decode_address(byte_stream, ans_type)
-        records_list.append(DnsResourceRecord(ans_type, clas, ttl, address))
+        records_list.append(DnsResourceRecord(ans_type, clas, ttl, address, internal_type=internal_type))
     
     def decode_address(self, byte_stream, ans_type):
         if ans_type == PackageType.AAAA.value:
@@ -92,6 +92,7 @@ class ResponseHandler:
         self.additional.clear()
     
     def parse_response(self, resp):
+        self.clear_all_queries()
         resp = io.BytesIO(resp)
         self.parse_header(resp)
         
@@ -99,10 +100,10 @@ class ResponseHandler:
             self.parse_question(resp)
         
         for i in range(self.answer_count):
-            self.parse_answer(resp, self.answers)
+            self.parse_answer(resp, self.answers, 'answer')
         
         for i in range(self.authority_count):
-            self.parse_answer(resp, self.authority)
+            self.parse_answer(resp, self.authority, 'authority')
         
         for i in range(self.additional_count):
-            self.parse_answer(resp, self.additional)
+            self.parse_answer(resp, self.additional, 'additional')
