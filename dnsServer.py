@@ -45,7 +45,7 @@ class DnsServer:
         elif command in ['-h', '--help']:
             self.print_help()
         elif 'type' in command:
-            self.req_type = PackageType.parse(self.extract_value(command))
+            self.req_type = PackageType.parse(self.extract_value(command)) or self.req_type
         elif 'protocol' in command:
             self.protocol = self.extract_value(command)
         elif 'main_server' in command:
@@ -61,7 +61,7 @@ class DnsServer:
                 self.address = command
                 self.get_address()
             except ValueError:
-                print(command + ' is not valid command')
+                print("No results for: " + command)
                 self.print_help()
     
     @staticmethod

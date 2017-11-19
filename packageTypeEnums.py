@@ -9,12 +9,7 @@ class PackageType(Enum):
     
     @staticmethod
     def parse(string):
-        if string == 'AAAA':
-            return PackageType.AAAA
-        if string == 'A':
-            return PackageType.A
-        if string == 'NS':
-            return PackageType.NS
-        if string == 'CNAME':
-            return PackageType.CNAME
-        raise ValueError(string + ' is not supported package type')
+        try:
+            return PackageType[string.upper()]
+        except KeyError:
+            print(string + ' is not supported package type')

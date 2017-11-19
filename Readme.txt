@@ -1,4 +1,5 @@
 DNS server.
+Entry point - dnsServer.py
 Author's email: gskryachko@gmail.com
 
 DNS server

@@ -8,10 +8,8 @@ class NetworkManager:
         if protocol not in ['TCP', 'UDP']:
             raise ValueError('Protocol should be either TCP or UDP')
         self.protocol = protocol
-        if protocol == 'UDP':
-            self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        else:
-            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) if protocol == 'UDP'\
+            else socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     
     def send(self, request, dns_server_ip, dns_server_port):
         if self.protocol == 'UDP':

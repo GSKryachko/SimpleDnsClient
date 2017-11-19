@@ -75,8 +75,9 @@ class ResponseHandler:
             return self.decode_canonical_name(byte_stream)
         elif ans_type == PackageType.A.value:
             return self.decode_id(byte_stream)
-        raise ValueError(ans_type + " package type is not supported")
-    
+        raise ValueError("Unsupported package type: ", ans_type)
+        
+        
     def parse_header(self, byte_stream):
         self.transaction_id = byte_stream.read(2)
         byte_stream.read(2)  # flags
