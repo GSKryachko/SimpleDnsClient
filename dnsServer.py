@@ -1,6 +1,8 @@
 from dnslib import *
-from responseHandler import ResponseHandler
+
+from PackageEncoder import *
 from dnsClient import DnsClient
+from packageParser import PackageParser
 
 if __name__ == '__main__':
     listener = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -12,6 +14,8 @@ if __name__ == '__main__':
         data, addr = listener.recvfrom(1024)
         resolver.sendto(data, dns)
         resp = resolver.recv(1024)
-        response_handler = ResponseHandler()
-        response_handler.parse_response(resp)
-        listener.sendto(resp, addr)
+        package_parser = PackageParser()
+        package_parser.parse_response(resp)
+        dns_package = package_parser.get_dns_package()
+        reconstructed = encode_package(dns_package)
+        listener.sendto(reconstructed, addr)

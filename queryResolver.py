@@ -1,12 +1,12 @@
 from networkManager import NetworkManager
-from responseHandler import ResponseHandler
+from packageParser import PackageParser
 from requestHandler import RequestHandler
 from packageTypeEnums import PackageType
 
 
 class QueryResolver:
     def __init__(self, protocol, support_resolving=True):
-        self.response_handler = ResponseHandler()
+        self.response_handler = PackageParser()
         self.request_handler = RequestHandler()
         self.network_handler = NetworkManager(protocol)
         self.support_resolving = support_resolving

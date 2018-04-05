@@ -1,11 +1,11 @@
 import io
 import unittest
-from responseHandler import ResponseHandler
+from packageParser import PackageParser
 
 
 class TestResponseHandler(unittest.TestCase):
     def setUp(self):
-        self.response_handler = ResponseHandler()
+        self.response_handler = PackageParser()
     
     def test_decode_CNAME(self):
         address_in_bytes = io.BytesIO(b'\x03www\x09microsoft\x03com\x00')

@@ -1,9 +1,10 @@
 import struct
 
+import os
+
 from packageTypeEnums import PackageType
 
-
-def encode_resource_record(record):
+def parse_resource_record(record):
     encoded = []
     encoded.append(encode_address_with_hex_prefixes(record.name))
     encoded.append(record.type.value)
@@ -29,3 +30,17 @@ def encode_data(data, record_type):
     if record_type == PackageType.CNAME:
         return encode_address_with_hex_prefixes(data)
     raise ValueError("Unsupported record type {}".format(record_type.value))
+
+
+def decode_canonical_name(byte_stream):
+    chunk_size_byte = byte_stream.read(1)
+    chunk_size = ord(chunk_size_byte)
+    address = []
+    while chunk_size > 0:
+        if chunk_size >= 192:
+            raise ValueError('Message compression is not supported')
+        chunk = byte_stream.read(chunk_size).decode()
+        address.append(chunk)
+        chunk_size = ord(byte_stream.read(1))
+    
+    return '.'.join(address)
