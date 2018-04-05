@@ -6,6 +6,7 @@ class PackageType(Enum):
     CNAME = b'\x00\x05'
     A = b'\x00\x01'
     NS = b'\x00\x02'
+    SOA = b'\x00\x06'
     
     @staticmethod
     def parse(string):

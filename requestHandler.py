@@ -1,11 +1,9 @@
-import socket
 from packageTypeEnums import PackageType
-
-import struct
 
 
 class RequestHandler:
-    def create_request(self, address, recursive=True, req_type=PackageType.A, req_class='IN'):
+    def create_request(self, address, recursive=True, req_type=PackageType.A,
+                       req_class='IN'):
         dns = b''
         dns += b'\xAB\xCD'  # transaction id
         flag = 0

@@ -1,7 +1,6 @@
-from struct import *
 import io
-
 import os
+from struct import *
 
 from dnsResourceRecord import DnsResourceRecord
 from packageTypeEnums import PackageType
@@ -47,17 +46,20 @@ class ResponseHandler:
     def decode_AAAA_address(self, byte_stream):
         adr = []
         for i in range(8):
-            adr.append('{:02x}'.format(ord(byte_stream.read(1))) + '{:02x}'.format(ord(byte_stream.read(1))))
+            adr.append(
+                '{:02x}'.format(ord(byte_stream.read(1))) + '{:02x}'.format(
+                    ord(byte_stream.read(1))))
         return ':'.join(adr)
     
     def decode_id(self, byte_stream):
         return '.'.join(str(quartet) for quartet in byte_stream.read(4))
     
-    def parse_question(self, byte_stream,internal_type = 'question'):
+    def parse_question(self, byte_stream, internal_type='question'):
         address = self.decode_canonical_name(byte_stream)
         type = byte_stream.read(2)
         clas = byte_stream.read(2)
-        self.questions.append(DnsResourceRecord(type, clas, address=address,internal_type=internal_type))
+        self.questions.append(DnsResourceRecord(type, clas, name=address,
+                                                internal_type=internal_type))
     
     def parse_answer(self, byte_stream, records_list, internal_type):
         name = self.decode_canonical_name(byte_stream)
@@ -66,7 +68,8 @@ class ResponseHandler:
         ttl = unpack('>I', byte_stream.read(4))[0]
         data_length = unpack('>h', byte_stream.read(2))[0]
         address = self.decode_address(byte_stream, ans_type)
-        records_list.append(DnsResourceRecord(ans_type, clas, ttl, address, internal_type=internal_type))
+        records_list.append(DnsResourceRecord(ans_type, clas, ttl, address,
+                                              internal_type=internal_type))
     
     def decode_address(self, byte_stream, ans_type):
         if ans_type == PackageType.AAAA.value:
@@ -76,8 +79,7 @@ class ResponseHandler:
         elif ans_type == PackageType.A.value:
             return self.decode_id(byte_stream)
         raise ValueError("Unsupported package type: ", ans_type)
-        
-        
+    
     def parse_header(self, byte_stream):
         self.transaction_id = byte_stream.read(2)
         byte_stream.read(2)  # flags
