@@ -2,8 +2,8 @@ class DnsResourceRecord:
     def __init__(self, query_type, clas, ttl=None, name=None, data=None,
                  internal_type=None):
         self.type = query_type
-        self.clas = clas
-        self.ttl = ttl
-        self.name = name
-        self.data = data
+        self.clas = clas  # Always IN
+        self.ttl = ttl  # in seconds
+        self.name = name  # CNAME
+        self.data = data  # A, NS or something, look at type
         self.internal_type = internal_type

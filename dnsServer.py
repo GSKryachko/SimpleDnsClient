@@ -1,21 +1,50 @@
 from dnslib import *
 
-from PackageEncoder import *
-from dnsClient import DnsClient
 from packageParser import PackageParser
+from serverCash import Cash
+from PackageEncoder import *
 
-if __name__ == '__main__':
-    listener = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    listener.bind(('localhost', 53))
-    client = DnsClient()
-    resolver = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    dns = ('8.8.8.8', 53)
-    while True:
-        data, addr = listener.recvfrom(1024)
-        resolver.sendto(data, dns)
-        resp = resolver.recv(1024)
+class DnsServer:
+    def __init__(self):
+        self.cash = Cash()
+        self.listener = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.listener.bind(('localhost', 53))
+        self.resolver = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.dns = ('8.8.8.8', 53)
+    
+    def form_response_from_cash(self, question):
+        question.answers.append(
+            self.cash.name_to_data[question.questions[0].name])
+        return encode_package(question)
+    
+    def request_and_save_answer_from_server(self, question):
+        self.resolver.sendto(question, self.dns)
+        resp = self.resolver.recv(1024)
         package_parser = PackageParser()
         package_parser.parse_response(resp)
         dns_package = package_parser.get_dns_package()
-        reconstructed = encode_package(dns_package)
-        listener.sendto(reconstructed, addr)
+        self.cash.register_package(dns_package)
+        return resp
+    
+    def run(self):
+        while True:
+            data, addr = self.listener.recvfrom(1024)
+            # self.resolver.sendto(data, self.dns)
+            # resp = self.resolver.recv(1024)
+            
+            package_parser = PackageParser()
+            package_parser.parse_response(data)
+            dns_package = package_parser.get_dns_package()
+            
+            name = dns_package.questions[0].name
+            if name in self.cash.name_to_data:
+                response = self.form_response_from_cash(dns_package)
+                print('That was an answer from cash')
+            else:
+                response = self.request_and_save_answer_from_server(data)
+            
+            self.listener.sendto(response, addr)
+
+
+if __name__ == '__main__':
+    DnsServer().run()

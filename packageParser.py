@@ -69,7 +69,10 @@ class PackageParser:
         clas = byte_stream.read(2)
         ttl = unpack('>I', byte_stream.read(4))[0]
         data_length = unpack('>h', byte_stream.read(2))[0]
-        address = self.decode_address(byte_stream, ans_type)
+        try:
+            address = self.decode_address(byte_stream, ans_type)
+        except ValueError:
+            return
         records_list.append(
             DnsResourceRecord(ans_type, clas, ttl,name=name, data=address,
                               internal_type=internal_type))
