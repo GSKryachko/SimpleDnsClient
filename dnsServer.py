@@ -1,8 +1,11 @@
+import threading
+
 from dnslib import *
 
+from PackageEncoder import *
 from packageParser import PackageParser
 from serverCash import Cash
-from PackageEncoder import *
+
 
 class DnsServer:
     def __init__(self):
@@ -11,7 +14,10 @@ class DnsServer:
         self.listener.bind(('localhost', 53))
         self.resolver = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.dns = ('8.8.8.8', 53)
-    
+        self.alive = True
+        self.cash.load()
+        threading.Thread(target=self.cash.assure_consistency).start()
+        
     def form_response_from_cash(self, question):
         question.answers.append(
             self.cash.name_to_data[question.questions[0].name])
@@ -27,7 +33,7 @@ class DnsServer:
         return resp
     
     def run(self):
-        while True:
+        while self.alive:
             data, addr = self.listener.recvfrom(1024)
             # self.resolver.sendto(data, self.dns)
             # resp = self.resolver.recv(1024)
@@ -44,6 +50,15 @@ class DnsServer:
                 response = self.request_and_save_answer_from_server(data)
             
             self.listener.sendto(response, addr)
+        self.cash.save()
+    
+    def wait_for_termination(self):
+        while True:
+            if input(':') == 'exit':
+                self.alive = False
+                return
+            else:
+                print("Print 'exit' to terminate server")
 
 
 if __name__ == '__main__':
