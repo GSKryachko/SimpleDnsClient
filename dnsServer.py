@@ -16,7 +16,10 @@ class DnsServer:
         self.dns = ('8.8.8.8', 53)
         self.alive = True
         self.cash.load()
-        threading.Thread(target=self.cash.assure_consistency).start()
+        cleaner = threading.Thread(target=self.cash.assure_consistency)
+        cleaner.deamon = True
+        
+        threading.Thread(target=self.wait_for_termination).start()
         
     def form_response_from_cash(self, question):
         question.answers.append(

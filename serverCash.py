@@ -1,4 +1,5 @@
 import json
+import pickle
 
 import time
 
@@ -18,14 +19,14 @@ class Cash:
                 self.name_to_data.pop(record.name)
                 self.data_to_name.pop(record.data)
     
-    def save(self, file='server_cash.json'):
-        with open(file, 'w') as f:
-            f.write(json.dumps([self.name_to_data, self.data_to_name]))
+    def save(self, file='server_cash.pickle'):
+        with open(file, 'wb') as f:
+            f.write(pickle.dumps([self.name_to_data, self.data_to_name]))
     
-    def load(self, file='server_cash.json'):
+    def load(self, file='server_cash.pickle'):
         try:
-            with open(file, 'r') as f:
-                self.name_to_data, self.data_to_name = json.loads(f.read())
+            with open(file, 'rb') as f:
+                self.name_to_data, self.data_to_name = pickle.load(f)
         except FileNotFoundError:
             pass
     
@@ -38,7 +39,6 @@ class Cash:
             self.register_entry(record)
     
     def assure_consistency(self):
-        print('Assuring consistency')
         while True:
             self.refresh_cash()
             time.sleep(60)
