@@ -40,5 +40,5 @@ class Cash:
     
     def assure_consistency(self):
         while True:
-            self.refresh_cash()
+            # self.refresh_cash()
             time.sleep(60)
