@@ -1,7 +1,7 @@
 from dnslib import *
 
 from packageEncoder import *
-from packageParser import PackageParser
+from packageParser import *
 from serverCash import Cash
 
 
@@ -24,9 +24,8 @@ class DnsServer:
         try:
             self.resolver.sendto(question, self.dns)
             resp = self.resolver.recv(1024)
-            package_parser = PackageParser()
-            package_parser.parse_response(resp)
-            dns_package = package_parser.get_dns_package()
+            
+            dns_package = parse_response(resp)
             if dns_package.questions:
                 print("registering package...")
             self.cash.register_package(dns_package)
@@ -39,10 +38,10 @@ class DnsServer:
             data, addr = self.listener.recvfrom(1024)
             # self.resolver.sendto(data, self.dns)
             # resp = self.resolver.recv(1024)
-            
-            package_parser = PackageParser()
-            package_parser.parse_response(data)
-            dns_package = package_parser.get_dns_package()
+            #
+            # package_parser = PackageParser()
+            # package_parser.parse_response(data)
+            dns_package = parse_response(data)
             
             print(*[(x.name, x.type) for x in dns_package.questions])
             print(self.cash.a)
@@ -60,7 +59,8 @@ class DnsServer:
                 try:
                     response = self.request_and_save_answer_from_server(data)
                     self.listener.sendto(response, addr)
-                except Exception:
+                except Exception as e:
+                    raise
                     print("Other server didn't respond")
         self.cash.save()
     
