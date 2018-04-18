@@ -1,32 +1,44 @@
-import json
 import pickle
-
 import time
+
+from packageTypeEnums import PackageType
 
 
 class Cash:
     def __init__(self):
-        self.name_to_data = {}
-        self.data_to_name = {}
+        self.a = {}
+        self.ns = {}
+    
+    def get_answer(self, record):
+        if record.type == PackageType.A:
+            return self.a.get(record.name, None)
+        if record.type == PackageType.NS:
+            return self.ns.get(record.name, None)
+        return None
     
     def register_entry(self, record):
-        self.name_to_data[record.name] = record
-        self.data_to_name[record.data] = record
+        if record.type not in [PackageType.A, PackageType.NS,
+                               PackageType.CNAME]:
+            return
+        if record.type == PackageType.A:
+            self.a[record.name] = record
+        if record.type == PackageType.NS:
+            self.ns[record.name] = record
     
     def refresh_cash(self):
-        for record in list(self.name_to_data.values()):
+        for record in list(self.a.values()):
             if record.ttl < time.time():
-                self.name_to_data.pop(record.name)
-                self.data_to_name.pop(record.data)
+                self.a.pop(record.name)
+                self.ns.pop(record.data)
     
     def save(self, file='server_cash.pickle'):
         with open(file, 'wb') as f:
-            f.write(pickle.dumps([self.name_to_data, self.data_to_name]))
+            f.write(pickle.dumps([self.a, self.ns]))
     
     def load(self, file='server_cash.pickle'):
         try:
             with open(file, 'rb') as f:
-                self.name_to_data, self.data_to_name = pickle.load(f)
+                self.a, self.ns = pickle.load(f)
         except FileNotFoundError:
             pass
     

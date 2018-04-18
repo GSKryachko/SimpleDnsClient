@@ -1,7 +1,7 @@
 import unittest
 
 from dnsRecourceRecordEncoder import *
-from dnsResourceRecord import DnsResourceRecord
+from domain.dnsResourceRecord import DnsResourceRecord
 from packageTypeEnums import *
 
 

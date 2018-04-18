@@ -2,8 +2,9 @@ import io
 import os
 from struct import *
 
-from dnsPackage import DnsPackage
-from dnsResourceRecord import DnsResourceRecord
+from domain.dnsResourceRecord import DnsResourceRecord
+
+from domain.dnsPackage import DnsPackage
 from packageTypeEnums import PackageType
 
 
@@ -74,7 +75,7 @@ class PackageParser:
         except ValueError:
             return
         records_list.append(
-            DnsResourceRecord(ans_type, clas, ttl,name=name, data=address,
+            DnsResourceRecord(ans_type, clas, ttl, name=name, data=address,
                               internal_type=internal_type))
     
     def decode_address(self, byte_stream, ans_type):

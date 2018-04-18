@@ -1,6 +1,5 @@
-from networkManager import NetworkManager
+from legacy.networkManager import NetworkManager
 from packageParser import PackageParser
-from requestHandler import RequestHandler
 from packageTypeEnums import PackageType
 
 

@@ -1,6 +1,7 @@
-from queryResolver import QueryResolver
-from packageTypeEnums import PackageType
 import re
+
+from legacy.queryResolver import QueryResolver
+from packageTypeEnums import PackageType
 
 
 class DnsClient:
