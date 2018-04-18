@@ -1,38 +1,34 @@
 import struct
 
+from domain.dnsHeader import DnsHeader
+from domain.dnsPackage import DnsPackage
 from packageTypeEnums import PackageType
 
 __all__ = ['encode_package']
 
 
-def encode_package(dns_package):
-    dns = b''
-    dns += dns_package.transaction_id
-    flag = 0
-    flag |= int(dns_package.recursive)
-    flag *= 2 ** 8
-    dns += flag.to_bytes(2, 'big')
-    dns += len(dns_package.questions).to_bytes(2, 'big')
-    dns += len(dns_package.answers).to_bytes(2, 'big')
-    dns += len(dns_package.authority_records).to_bytes(2, 'big')
-    dns += len(dns_package.additional_records).to_bytes(2, 'big')
-    
-    for question in dns_package.questions:
-        dns += encode_question(question)
-    for record in dns_package.answers:
-        dns += encode_resource_record(record)
-    for record in dns_package.authority_records:
-        dns += encode_resource_record(record)
-    for record in dns_package.additional_records:
-        dns += encode_resource_record(record)
-    return dns
+def encode_package(dns_package: DnsPackage):
+    encoded = [encode_header(dns_package.header)]
+    encoded.extend([encode_question(x) for x in dns_package.questions])
+    encoded.extend([encode_resource_record(x) for x in dns_package.answers])
+    encoded.extend([encode_question(x) for x in dns_package.authority_records])
+    encoded.extend(
+        [encode_question(x) for x in dns_package.additional_records])
+    return b''.join(encoded)
+
+
+def encode_header(header: DnsHeader):
+    ans = [header.transaction_id, header.flags,
+           header.questions_count.to_bytes(2, 'big'),
+           header.answers_count.to_bytes(2, 'big'),
+           header.authority_count.to_bytes(2, 'big'),
+           header.additional_count.to_bytes(2, 'big')]
+    return b''.join(ans)
 
 
 def encode_question(question):
-    ans = []
-    ans.append(encode_address_with_hex_prefixes(question.name))
-    ans.append(question.type.value)
-    ans.append((1).to_bytes(2, 'big'))
+    ans = [encode_address_with_hex_prefixes(question.name),
+           question.type.value, (1).to_bytes(2, 'big')]
     return b''.join(ans)
 
 
@@ -43,14 +39,14 @@ def encode_address_with_hex_prefixes(address):
     ans += b'\x00'
     return ans
 
+
 def encode_ip(ip):
     return bytes([int(x) for x in ip.split('.')])
 
+
 def encode_resource_record(record):
-    encoded = []
-    encoded.append(
-        encode_address_with_hex_prefixes(record.name))
-    encoded.append(record.type.value)
+    encoded = [encode_address_with_hex_prefixes(record.name),
+               record.type.value]
     if record.clas != b'\x00\x01':
         raise ValueError('Only IN class requests are supported')
     encoded.append(((1).to_bytes(2, 'big')))
