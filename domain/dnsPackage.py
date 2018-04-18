@@ -6,3 +6,7 @@ class DnsPackage:
         self.answers = answers
         self.authority_records = authority_records
         self.additional_records = additional_records
+    
+    def add_answer(self, answer):
+        self.answers.append(answer)
+        self.header.answers_count += 1

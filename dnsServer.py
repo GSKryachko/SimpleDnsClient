@@ -36,11 +36,6 @@ class DnsServer:
     def run(self):
         while self.alive:
             data, addr = self.listener.recvfrom(1024)
-            # self.resolver.sendto(data, self.dns)
-            # resp = self.resolver.recv(1024)
-            #
-            # package_parser = PackageParser()
-            # package_parser.parse_response(data)
             dns_package = parse_response(data)
             
             print(*[(x.name, x.type) for x in dns_package.questions])
@@ -50,7 +45,7 @@ class DnsServer:
             question = dns_package.questions[0]
             answer = self.cash.get_answer(question)
             if answer:
-                dns_package.answers.append(answer)
+                dns_package.add_answer(answer)
                 response = encode_package(dns_package)
                 print('That was an answer from cash')
                 self.listener.sendto(response, addr)
