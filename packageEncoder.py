@@ -58,7 +58,7 @@ def encode_resource_record(record):
 
 
 def encode_data(data, record_type):
-    if record_type in [PackageType.CNAME, PackageType.NS]:
+    if record_type in [PackageType.CNAME, PackageType.NS,PackageType.SOA]:
         return encode_address_with_hex_prefixes(data)
     if record_type == PackageType.A:
         return encode_ip(data)

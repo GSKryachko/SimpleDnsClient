@@ -1,3 +1,5 @@
+import threading
+
 from dnslib import *
 
 from packageEncoder import *
@@ -11,14 +13,14 @@ class DnsServer:
         self.listener = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.listener.bind(('localhost', 53))
         self.resolver = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.dns = ('8.8.8.8', 53)
+        self.dns = ('212.193.163.6', 53)
         self.alive = True
         self.cash.load()
         self.resolver.settimeout(5)
-        # cleaner = threading.Thread(target=self.cash.assure_consistency)
-        # cleaner.deamon = True
-        #
-        # threading.Thread(target=self.wait_for_termination).start()
+        cleaner = threading.Thread(target=self.cash.assure_consistency)
+        cleaner.deamon = True
+
+        threading.Thread(target=self.wait_for_termination).start()
     
     def request_and_save_answer_from_server(self, question):
         try:
@@ -26,21 +28,15 @@ class DnsServer:
             resp = self.resolver.recv(1024)
             
             dns_package = parse_response(resp)
-            if dns_package.questions:
-                print("registering package...")
             self.cash.register_package(dns_package)
             return resp
         except Exception as e:
-            raise
+            return None
     
     def run(self):
         while self.alive:
             data, addr = self.listener.recvfrom(1024)
             dns_package = parse_response(data)
-            
-            print(*[(x.name, x.type) for x in dns_package.questions])
-            print(self.cash.a)
-            print(self.cash.ns)
             
             question = dns_package.questions[0]
             answer = self.cash.get_answer(question)
@@ -51,11 +47,10 @@ class DnsServer:
                 self.listener.sendto(response, addr)
                 continue
             else:
-                try:
-                    response = self.request_and_save_answer_from_server(data)
+                response = self.request_and_save_answer_from_server(data)
+                if response:
                     self.listener.sendto(response, addr)
-                except Exception as e:
-                    raise
+                else:
                     print("Other server didn't respond")
         self.cash.save()
     
@@ -63,6 +58,7 @@ class DnsServer:
         while True:
             if input(':') == 'exit':
                 self.alive = False
+                print('Waiting for one more package before terminating')
                 return
             else:
                 print("Print 'exit' to terminate server")
