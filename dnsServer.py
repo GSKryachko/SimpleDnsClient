@@ -1,3 +1,4 @@
+import sys
 import threading
 
 from dnslib import *
@@ -5,22 +6,25 @@ from dnslib import *
 from packageEncoder import *
 from packageParser import *
 from serverCash import Cash
-
+import json
 
 class DnsServer:
     def __init__(self):
+        with open('config.json','r') as f:
+            config = json.load(f)
         self.cash = Cash()
         self.listener = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.listener.bind(('localhost', 53))
         self.resolver = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.dns = ('8.8.8.8', 53)
-        self.alive = True
+        self.dns = (config['main_server_ip'], 53)
         self.cash.load()
         self.resolver.settimeout(5)
-        cleaner = threading.Thread(target=self.cash.assure_consistency)
-        cleaner.deamon = True
-        cleaner.start()
-        threading.Thread(target=self.wait_for_termination).start()
+        self.cleaner = threading.Thread(target=self.cash.assure_consistency,name='cleaner')
+        self.cleaner.setDaemon(True)
+        self.cleaner.start()
+        self.waiter = threading.Thread(target=self.wait_for_termination,name='waiter')
+        self.waiter.setDaemon(True)
+        self.waiter.start()
     
     def request_and_save_answer_from_server(self, question):
         try:
@@ -34,7 +38,7 @@ class DnsServer:
             return None
     
     def run(self):
-        while self.alive:
+        while self.waiter.isAlive():
             data, addr = self.listener.recvfrom(1024)
             dns_package = parse_response(data)
             question = dns_package.questions[0]
@@ -53,11 +57,14 @@ class DnsServer:
                 else:
                     print("Other server didn't respond")
         self.cash.save()
-    
+        print('Main loop has ended')
+        for thread in threading.enumerate():
+            print(thread)
+        sys.exit(0)
+        
     def wait_for_termination(self):
         while True:
             if input(':') == 'exit':
-                self.alive = False
                 print('Waiting for one more package before terminating')
                 return
             else:

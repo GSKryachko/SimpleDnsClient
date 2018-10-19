@@ -1,14 +1,7 @@
-DNS server.
+Very simple cached DNS server I made as university project.
 Entry point - dnsServer.py
 Author's email: gskryachko@gmail.com
 
-DNS server
---help,-h               help
-type=<dns package type> sets type
-port=<port>             sets port
-recursion=<true/false>  if true, server will request recursion
-main_server=<ip>        sets main dns ip
-reserved_server=<ip>    sets reserved server ip
-protocol=<TCP/UDP>      sets transport protocol
-exit                    close program
-<address>               returns data of address of type specified by type argument
+Runs dns server on port 53.
+You can set ip of base DNS in config.json
+Works with requests of type A,AAAA, NS, CNAME

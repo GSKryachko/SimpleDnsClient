@@ -5,5 +5,5 @@ class DnsResourceRecord:
         self.clas = clas  # Always IN
         self.ttl = ttl  # in seconds
         self.name = name  # CNAME
-        self.data = data  # A, NS or something, look at type
+        self.data = data  # A, NS or something, depending at type
         self.internal_type = internal_type
